@@ -69,7 +69,26 @@ func getRecipe() (*s.Recipe){
 }
 
 func addRecipe(){
-
+    recipe := s.Recipe{}
+    fmt.Println("Title: ")
+    title, _ := reader.ReadString('\n')
+    title = strings.TrimSpace(title)
+    recipe.Title = title
+    fmt.Println("Author: ")
+    author, _ := reader.ReadString('\n')
+    author = strings.TrimSpace(author)
+    recipe.Author = author
+    fmt.Println("Ingredients (endter a line separated list): ")
+    ingredients, _ := reader.ReadString('\n')
+    ingredients = strings.TrimSpace(ingredients)
+    ingredList := strings.Split(ingredients,",")
+    recipe.Ingredients = ingredList
+    fmt.Println("Steps (endter a line separated list): ")
+    steps, _ := reader.ReadString('\n')
+    steps = strings.TrimSpace(steps)
+    stepList := strings.Split(steps,",")
+    recipe.Steps = stepList
+    
 }
 
 func updateRecipe(){
