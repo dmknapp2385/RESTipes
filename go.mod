@@ -1,4 +1,4 @@
-module winners.com/recipies
+module winners.com/recipes
 
 go 1.23.2
 
