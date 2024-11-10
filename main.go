@@ -10,22 +10,23 @@ import (
 	s "winners.com/recipes/Server"
 )
 
+var controller = RecipeController{BaseURL: "http://localhost:3000"}
+var reader = bufio.NewReader(os.Stdin)
 
 
 func main(){
+    
 	go s.StartServer() // go routine so tests can be done concurrently
-	// s.StartServer()
 
 	// temporary for testing controller
-	controller := RecipeController{BaseURL: "http://localhost:3000"}
 	// getRecipesTest(&controller)
-   
 
    for{
-    reader := bufio.NewReader(os.Stdin)
-    fmt.Println("What would you like to do: 1. Get all recipes \n 2.Get Recipe by name \n 3.Add Recipe\n4. Update recipe\n5. Delete all recipes? Press any other key to exit.")
+    
+    fmt.Println("What would you like to do:\n1. Get all recipes\n2. Get Recipe by name\n3. Add Recipe\n4. Update recipe\n5. Delete all recipes? Press any other key to exit.")
     input, _ := reader.ReadString('\n')
     input = strings.TrimSpace(input)
+
 
     //loop for input
     if input == "1"{
@@ -33,7 +34,9 @@ func main(){
         output(recipes)
     }else if input == "2"{
         recipe := getRecipe()
-        output([]s.Recipe{*recipe})
+        if recipe != nil{
+            printRecipe(recipe)
+        }        
     }else if input == "3"{
         addRecipe()
     }else if input == "4"{
@@ -41,16 +44,28 @@ func main(){
     }else if input =="5"{
         controller.DeleteAllRecipes()
     } else{
-        break
+        os.Exit(3)
     }
    }
-    
-   select{} // blocks to goroutine from exiting so the server can continue running
+
+   //this is never reached but seems to be working without it???
+//    select{} // blocks to goroutine from exiting so the server can continue running
 
 }
 
 func getRecipe() (*s.Recipe){
+    fmt.Println("Which recipe would you like to get?")
+
+    input, _ := reader.ReadString('\n')
+    input = strings.TrimSpace(input)
     
+    recipe,err := controller.GetRecipeByName(input)
+
+    if err != nil{
+        fmt.Println("Could not find recipe by that name")
+        return nil
+    } 
+    return recipe
 }
 
 func addRecipe(){
@@ -59,24 +74,63 @@ func addRecipe(){
 
 func updateRecipe(){
     recipe:= getRecipe()
+    if recipe == nil{
+        return
+    }
+    name := recipe.Title
+    fmt.Println("What would you like to update\n1.Title\n2.Author\n3.Ingredients\n4.Steps?")
+    input, _ := reader.ReadString('\n')
+    input = strings.TrimSpace(input)
+    if input == "1"{
+        fmt.Println("New Title: ")
+        input, _ := reader.ReadString('\n')
+        input = strings.TrimSpace(input)
+        recipe.Title=input
+    }else if input == "2"{
+        fmt.Println("New Author: ")
+        input, _ := reader.ReadString('\n')
+        input = strings.TrimSpace(input)
+        recipe.Author=input
+    }else if input == "3"{
+        fmt.Println("Enter comma separated list of ingredients: ")
+        input, _ := reader.ReadString('\n')
+        input = strings.TrimSpace(input)
+        ingredients:= strings.Split(input,",")
+        recipe.Ingredients = ingredients
+    }else if input == "4"{
+        fmt.Println("Enter comma separated list of steps: ")
+        input, _ := reader.ReadString('\n')
+        input = strings.TrimSpace(input)
+        steps:= strings.Split(input,",")
+        recipe.Ingredients = steps
+    }else {
+        fmt.Println("Did not recoginze command")
+        return
+    }
 
+    controller.UpdateRecipe(name,*recipe)
 }
 
+
+//funciton prints singlular recipe with all information
+func printRecipe(r *s.Recipe){
+    outputStr := "Title: " + r.Title + "\nAuthor: " + r.Author + "\nIngredients:\n"
+
+        for _,ingredient := range r.Ingredients{
+            outputStr += "\t\u2022" + ingredient + " \n"
+        }
+        outputStr += "Steps:\n"
+        for i,step := range r.Steps{
+            outputStr += "\t" + strconv.Itoa(i+1) + ": " + step + " \n"
+        }
+        outputStr += "Rating: " + string(r.Rating)
+        fmt.Println(outputStr)
+}
 
 //function takes a recipe slice and outputs in readable format
 func output (recipies []s.Recipe){
     for _, recipe:=range recipies{
-        outputStr := "Title: " + recipe.Title + "\n Author: " + recipe.Author + "\n Ingredients:\n"
-
-        for _,ingredient := range recipe.Ingredients{
-            outputStr += "\t\u2022" + ingredient + " \n"
-        }
-        outputStr += "Steps:\n"
-        for i,step := range recipe.Steps{
-            outputStr += "\t" + strconv.Itoa(i+1) + ": " + step + " \n"
-        }
-        outputStr += "Rating: " + string(recipe.Rating)
-        fmt.Println(outputStr)
+        fmt.Println(recipe.Title)
     }
     
 }
