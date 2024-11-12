@@ -9,6 +9,8 @@ import (
 	s "winners.com/recipes/Server"
 )
 
+const DEBUG_MODE = false
+
 var wait_group sync.WaitGroup = sync.WaitGroup{}
 
 func main() {

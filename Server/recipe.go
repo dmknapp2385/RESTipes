@@ -108,8 +108,10 @@ func updateRecipe(c *gin.Context) {
 	})
 }
 
-func StartServer() {
-	//gin.SetMode(gin.ReleaseMode)
+func StartServer(debug_mode bool) {
+	if !debug_mode {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	r := gin.Default()
 	r.GET("/", getRecipes)
 	r.DELETE("/", deleteAll)
