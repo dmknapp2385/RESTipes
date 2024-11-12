@@ -3,30 +3,44 @@ package server
 import (
 	"errors"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
+/*
+	type Recipe struct {
+		ID          int      `json:"id"`
+		Title       string   `json:"title"`
+		Ingredients []string `json:"ingredients"`
+		Steps       []string `json:"steps"`
+		Baketime    int      `json:"baketime"`
+		Vegan       bool     `json:"vegan"`
+		Author      string   `json:"author"`
+		Rating      int      `json:"rating"`
+	}
+*/
 type Recipe struct {
-	ID          int      `json:"id"`
+	ID          uint32   `json:"id"`
 	Title       string   `json:"title"`
 	Ingredients []string `json:"ingredients"`
 	Steps       []string `json:"steps"`
-	Baketime    int      `json:"baketime"`
+	Baketime    uint8    `json:"baketime"`
 	Vegan       bool     `json:"vegan"`
 	Author      string   `json:"author"`
-	Rating      int      `json:"rating"`
+	Rating      uint8    `json:"rating"`
+}
+
+var recipeBook = []Recipe{
+	{ID: 1, Title: "meat loaf", Ingredients: []string{"beef", "breadcrumbs", "spices"}, Baketime: 120, Vegan: false, Author: "elle", Rating: 5},
 }
 
 var server_running bool = false
 
-var recipeBook = []Recipe{
-	{ID: 1, Title: "Meat Loaf", Ingredients: []string{"beef", "breadcrumbs", "spices"}, Baketime: 120, Vegan: false, Author: "Elle", Rating: 5},
-}
-
 // Function to return all recipes
 func getRecipes(c *gin.Context) {
-	c.JSON(http.StatusOK, recipeBook)
+	c.JSON(http.StatusOK, dbRecipes._Recipes)
 }
 
 // Function to delete all recipes
@@ -47,16 +61,18 @@ func createRecipe(c *gin.Context) {
 	}
 
 	// Add recipe to recipe slice
-	recipeBook = append(recipeBook, newRecipe)
+	recipeBook = append(recipeBook, newRecipe) // old backend
+	dbRecipes.insert(&newRecipe)               // updated backend
 
 	// Returns status to client and the recipe just created
 	c.IndentedJSON(http.StatusCreated, newRecipe)
 }
 
 // Helper to get recipe by name
-func getRecipe(t string) (*Recipe, error) {
+func getRecipe(title string) (*Recipe, error) {
+	title = strings.ToLower(title)
 	for index, recipe := range recipeBook {
-		if recipe.Title == t {
+		if strings.ToLower(recipe.Title) == title {
 			return &recipeBook[index], nil
 		}
 	}
@@ -64,15 +80,40 @@ func getRecipe(t string) (*Recipe, error) {
 }
 
 // Get a recipe by name
+func getRecipeQuery(c *gin.Context) {
+	title, title_exists := c.GetQuery("title")
+	id, id_exists := c.GetQuery("id")
+	if title_exists {
+		recipe, err := dbRecipes.query_title(title)
+		if err == nil {
+			c.JSON(http.StatusOK, recipe)
+			return
+		}
+	} else if id_exists {
+		var id_uint uint64
+		id_uint, _ = strconv.ParseUint(id, 10, 64)
+		recipe, err := dbRecipes.query_id(id_uint)
+		if err == nil {
+			c.JSON(http.StatusOK, recipe)
+			return
+		}
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "missing title query"})
+	}
+	c.JSON(http.StatusNotFound, gin.H{"message": "recipe not found"})
+	return
+}
+
+// Get a recipe by name
 func getRecipeByName(c *gin.Context) {
 	title, ok := c.GetQuery("title")
-
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "missing title query"})
 		return
 	}
 
-	recipe, err := getRecipe(title)
+	//recipe, err := getRecipe(title)
+	recipe, err := dbRecipes.query_title(title)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Recipe not found"})
 		return
@@ -116,7 +157,7 @@ func StartServer(debug_mode bool) {
 	r.GET("/", getRecipes)
 	r.DELETE("/", deleteAll)
 	r.POST("/recipe", createRecipe)
-	r.GET("/recipe", getRecipeByName)
+	r.GET("/recipe", getRecipeQuery)
 	r.PUT("/recipe", updateRecipe)
 
 	server_running = true

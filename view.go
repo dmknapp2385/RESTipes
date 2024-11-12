@@ -28,16 +28,21 @@ func view_prompt(wait_group *sync.WaitGroup) {
 		fmt.Print(">>> ")
 		input, _ := reader.ReadString('\n')
 
-		//loop for input
 		switch strings.TrimSpace(input) {
+
 		case GET_ALL_RECIPES:
-			recipes, _ := controller.GetRecipes()
-			output(recipes)
+			get_recipes()
+
 		case GET_RECIPE_BY_TITLE:
-			recipe := getRecipe()
-			if recipe != nil {
-				printRecipe(recipe)
-			}
+			get_recipes()
+
+			fmt.Println("\nWhich recipe would you like to get?")
+			fmt.Print(">>> ")
+			input, _ := reader.ReadString('\n')
+
+			title := strings.TrimSpace(input)
+			get_recipe(title)
+
 		case POST_NEW_RECIPE:
 			addRecipe()
 		case UPDATE_RECIPE:
@@ -57,6 +62,27 @@ func view_prompt(wait_group *sync.WaitGroup) {
 
 	fmt.Println("goodbye!")
 	wait_group.Done()
+}
+
+func get_recipes() {
+	recipes, err := controller.GetRecipes()
+	if err != nil {
+		fmt.Println("\nResults: Could not find any recipes.")
+	} else {
+		fmt.Println("\nResults:")
+		for i, recipe := range recipes {
+			fmt.Printf(" (%v) %s\n", i, strings.ToTitle(recipe.Title))
+		}
+	}
+}
+
+func get_recipe(title string) {
+	recipe, err := controller.GetRecipeByName(title)
+	if err != nil {
+		fmt.Println("Could not find recipe by that name")
+	} else {
+		fmt.Printf("'%s', by %s\n", recipe.Title, recipe.Author)
+	}
 }
 
 func getRecipe() *s.Recipe {

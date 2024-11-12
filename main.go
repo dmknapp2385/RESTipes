@@ -24,7 +24,7 @@ func main() {
 
 func initialize_server(wait_group *sync.WaitGroup) {
 	wait_group.Add(1)
-	go s.StartServer() // go routine so tests can be done concurrently
+	go s.StartServer(DEBUG_MODE) // go routine so tests can be done concurrently
 	for {
 		if s.ServerReady() {
 			break
@@ -32,8 +32,9 @@ func initialize_server(wait_group *sync.WaitGroup) {
 	}
 	for i := 0; i < 3; i++ {
 		time.Sleep(time.Second * 1)
-		time.Sleep(time.Millisecond * 500)
-		fmt.Print(".")
+		if DEBUG_MODE {
+			fmt.Print(".")
+		}
 	}
 	fmt.Print("\033[H\033[2J") // clear screen with ASCII
 	wait_group.Done()
