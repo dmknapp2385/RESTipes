@@ -18,6 +18,8 @@ type Recipe struct {
 	Rating      int      `json:"rating"`
 }
 
+var server_running bool = false
+
 var recipeBook = []Recipe{
 	{ID: 1, Title: "Meat Loaf", Ingredients: []string{"beef", "breadcrumbs", "spices"}, Baketime: 120, Vegan: false, Author: "Elle", Rating: 5},
 }
@@ -107,6 +109,7 @@ func updateRecipe(c *gin.Context) {
 }
 
 func StartServer() {
+	//gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.GET("/", getRecipes)
 	r.DELETE("/", deleteAll)
@@ -114,5 +117,10 @@ func StartServer() {
 	r.GET("/recipe", getRecipeByName)
 	r.PUT("/recipe", updateRecipe)
 
+	server_running = true
 	r.Run("localhost:3000") // listen and serve on port 3000
+}
+
+func ServerReady() bool {
+	return server_running
 }
