@@ -29,7 +29,6 @@ func view_prompt(wait_group *sync.WaitGroup) {
 		input, _ := reader.ReadString('\n')
 
 		switch strings.TrimSpace(input) {
-
 		case GET_ALL_RECIPES:
 			get_recipes()
 

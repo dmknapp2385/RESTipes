@@ -118,7 +118,6 @@ func getRecipeByName(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Recipe not found"})
 		return
 	}
-
 	c.JSON(http.StatusOK, recipe)
 }
 
