@@ -2,7 +2,6 @@ package server
 
 import (
 	"errors"
-	"strings"
 	"sync"
 )
 
@@ -21,9 +20,17 @@ var dbRecipes RecipeDatabase = RecipeDatabase{
 	_Size:         0,
 }
 
+func(db *RecipeDatabase) deleteAll(){
+	db._CurrentID = 0;
+	db._Recipes =  make(map[uint64]*Recipe);
+	db._Column_Title =  make(map[string]*Recipe);
+	db._Size = 0;
+}
+
 func (db *RecipeDatabase) insert(r *Recipe) {
 	db.Lock()
 	db._CurrentID++
+	r.ID = uint32(db._CurrentID);
 	db._Recipes[db._CurrentID] = r
 	db._Column_Title[r.Title] = r
 	db._Size++
@@ -42,7 +49,8 @@ func (db *RecipeDatabase) query_title(title string) (*Recipe, error) {
 	var recipe *Recipe
 	var found bool
 	db.RLock()
-	recipe, found = db._Column_Title[strings.ToLower(title)]
+	// recipe, found = db._Column_Title[strings.ToLower(title)]
+	recipe, found = db._Column_Title[title]
 	db.RUnlock()
 	if !found {
 		return nil, errors.New("recipe not found")
