@@ -25,6 +25,8 @@ func main() {
 func initialize_server(wait_group *sync.WaitGroup) {
 	wait_group.Add(1)
 	go s.StartServer(DEBUG_MODE) // go routine so tests can be done concurrently
+
+    //Check if server is ready before preceeding
 	for {
 		if s.ServerReady() {
 			break

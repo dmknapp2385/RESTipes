@@ -19,7 +19,7 @@ type Recipe struct {
 	Rating      uint8    `json:"rating"`
 }
 
-
+//variable to indicate to view that server is running
 var server_running bool = false
 
 // Function to return all recipes
@@ -124,15 +124,18 @@ func deleteRecipeByName (c *gin.Context){
 
 }
 
+//delete recipe by id number
 func deleteById (c *gin.Context){
 	id, ok := c.GetQuery("id")
+
+	id_uint, _ := strconv.ParseUint(id, 10, 64)
 
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "URL missing query"})
 		return
 	}
 
-	recipe, err := dbRecipes.query_id(id);
+	recipe, err := dbRecipes.query_id(id_uint);
 
 	if err != nil{
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Recipe not found"})
@@ -145,7 +148,7 @@ func deleteById (c *gin.Context){
 
 
 
-
+//function to start the server and initialize endpoints
 func StartServer(debug_mode bool) {
 	if !debug_mode {
 		gin.SetMode(gin.ReleaseMode)
@@ -163,6 +166,7 @@ func StartServer(debug_mode bool) {
 	r.Run("localhost:3000") // listen and serve on port 3000
 }
 
+//lets client know if server is running
 func ServerReady() bool {
 	return server_running
 }
