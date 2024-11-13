@@ -160,8 +160,8 @@ func StartServer(debug_mode bool) {
 	r.GET("/recipe", getRecipeQuery)
 	r.PUT("/recipe", updateRecipe)
 	r.DELETE("/recipe", deleteRecipeByName)
-	r.DELETE("/recipe", deleteById)
-
+	r.DELETE(("/recipe/:id"), deleteById)
+	
 	server_running = true
 	r.Run("localhost:3000") // listen and serve on port 3000
 }

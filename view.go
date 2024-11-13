@@ -20,8 +20,11 @@ const DELETE_ALL_RECIPES = "5"
 var reader = bufio.NewReader(os.Stdin)
 var controller = RecipeController{BaseURL: "http://localhost:3000"}
 
-func view_prompt(wait_group *sync.WaitGroup) {
+func view_prompt(wait_group *sync.WaitGroup, file *string) {
 
+	if *file !=""{
+		fmt.Println(*file)
+	}
 	var run_prompt bool = true
 	for {
 		fmt.Println("What would you like to do:\n1. Get all recipes\n2. Get Recipe by name\n3. Add Recipe\n4. Update recipe\n5. Delete all recipes? Press any other key to exit.")

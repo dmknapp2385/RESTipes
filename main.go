@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"sync"
@@ -12,11 +13,13 @@ import (
 const DEBUG_MODE = false
 
 var wait_group sync.WaitGroup = sync.WaitGroup{}
+var file = flag.String("file", "", "a string");
 
 func main() {
+    flag.Parse();
 
 	initialize_server(&wait_group)
-	initialize_client(&wait_group)
+	initialize_client(&wait_group, file)
 
 	wait_group.Wait()
 	os.Exit(3)
@@ -38,11 +41,13 @@ func initialize_server(wait_group *sync.WaitGroup) {
 			fmt.Print(".")
 		}
 	}
+
+    
 	fmt.Print("\033[H\033[2J") // clear screen with ASCII
 	wait_group.Done()
 }
 
-func initialize_client(wait_group *sync.WaitGroup) {
+func initialize_client(wait_group *sync.WaitGroup, file *string) {
 	wait_group.Add(1)
-	go view_prompt(wait_group)
+	go view_prompt(wait_group, file)
 }
