@@ -2,12 +2,14 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 
+	// "github.com/gin-gonic/gin/internal/json"
 	s "winners.com/recipes/Server"
 )
 
@@ -23,7 +25,20 @@ var controller = RecipeController{BaseURL: "http://localhost:3000"}
 func view_prompt(wait_group *sync.WaitGroup, file *string) {
 
 	if *file !=""{
-		fmt.Println(*file)
+		data, err := os.ReadFile(*file)
+		if err != nil{
+			fmt.Println("File not found!")
+		}
+		
+		var recipes []s.Recipe
+		err = json.Unmarshal(data, &recipes)
+		if err != nil{
+			panic(err)
+		}
+		for _,recipe:=range recipes {
+			//controller.addRecipe(recipe)
+			fmt.Println(recipe)
+		}
 	}
 	var run_prompt bool = true
 	for {
@@ -122,6 +137,8 @@ func addRecipe() {
 	steps = strings.TrimSpace(steps)
 	stepList := strings.Split(steps, ",")
 	recipe.Steps = stepList
+	//controller.addRecipe(recipe)
+
 }
 
 func updateRecipe() {
