@@ -166,6 +166,62 @@ func (rc *RecipeController) DeleteAllRecipes() error {
 	return nil
 }
 
-func (rc *RecipeController) createRecipe() error {
-	
+// delete given recipe
+func (rc *RecipeController) DeleteRecipeByName(name string) error {
+	// ensure the name is properly encoded and replace spaces with +
+	name = url.QueryEscape(name)
+
+	// Create an HTTP DELETE request
+	req, err := http.NewRequest(http.MethodDelete, rc.BaseURL+"/recipe?title="+name, nil)
+	if err != nil {
+		return err
+	}
+
+	// Send the DELETE request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Check if the deletion was successful
+	if resp.StatusCode != http.StatusOK {
+		body, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("failed to delete recipes: %s", string(body))
+	}
+
+	return nil
+}
+
+// adds new recipe using POST
+func (rc *RecipeController) createRecipe(newRecipe s.Recipe) error {
+	// Convert the updated Recipe struct to JSON
+	jsonData, err := json.Marshal(newRecipe)
+	if err != nil {
+		return err
+	}
+
+	// Create a POST request
+	req, err := http.NewRequest(http.MethodPost, rc.BaseURL+"/recipe?title="+name, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send the POST request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Check if the create was successful
+	if resp.StatusCode != http.StatusOK {
+		body, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("failed to create recipe: %s", string(body))
+	}
+
+	return nil
 }
