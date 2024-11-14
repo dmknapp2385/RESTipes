@@ -44,7 +44,7 @@ func (rc *RecipeController) GetRecipes() ([]s.Recipe, error) {
 // Get a single recipe by name
 func (rc *RecipeController) GetRecipeByName(name string) (*s.Recipe, error) {
 	// ensure the name is properly encoded and replace spaces with +
-	name = url.QueryEscape(strings.ToLower(name))
+	name = url.QueryEscape(name)
 
 	// Make an HTTP GET request with the name as a query parameter
 	resp, err := http.Get(rc.BaseURL + "/recipe?title=" + name)
