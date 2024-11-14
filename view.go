@@ -9,7 +9,6 @@ import (
 	"strings"
 	"sync"
 
-	// "github.com/gin-gonic/gin/internal/json"
 	s "winners.com/recipes/Server"
 )
 
@@ -36,10 +35,11 @@ func view_prompt(wait_group *sync.WaitGroup, file *string) {
 			panic(err)
 		}
 		for _,recipe:=range recipes {
-			//controller.addRecipe(recipe)
+			controller.createRecipe(recipe)
 			fmt.Println(recipe)
 		}
 	}
+    
 	var run_prompt bool = true
 	for {
 		fmt.Println("What would you like to do:\n1. Get all recipes\n2. Get Recipe by name\n3. Add Recipe\n4. Update recipe\n5. Delete all recipes? Press any other key to exit.")
@@ -137,7 +137,18 @@ func addRecipe() {
 	steps = strings.TrimSpace(steps)
 	stepList := strings.Split(steps, ",")
 	recipe.Steps = stepList
-	//controller.addRecipe(recipe)
+	fmt.Println("Bake time: ")
+	baketime, _ := reader.ReadString('\n')
+	baketime = strings.TrimSpace(baketime)
+	baketime_int,_ :=strconv.ParseUint(baketime,10,8)
+	recipe.Baketime = uint8(baketime_int)
+	fmt.Println("Rating: ")
+	rating, _ := reader.ReadString('\n')
+	rating = strings.TrimSpace(rating)
+	rate_int,_ :=strconv.ParseUint(baketime,10,8)
+	recipe.Baketime = uint8(rate_int)
+
+	controller.createRecipe(recipe)
 
 }
 
@@ -147,7 +158,7 @@ func updateRecipe() {
 		return
 	}
 	name := recipe.Title
-	fmt.Println("What would you like to update\n1.Title\n2.Author\n3.Ingredients\n4.Steps?")
+	fmt.Println("What would you like to update\n1.Title\n2.Author\n3.Ingredients\n4.Steps\n5.Baketime\n6.Rating?")
 	input, _ := reader.ReadString('\n')
 	input = strings.TrimSpace(input)
 	if input == "1" {
@@ -172,7 +183,19 @@ func updateRecipe() {
 		input = strings.TrimSpace(input)
 		steps := strings.Split(input, ",")
 		recipe.Ingredients = steps
-	} else {
+	} else if input == "5"{
+		fmt.Println("Enter the bake time: ")
+		input, _ := reader.ReadString('\n')
+		input = strings.TrimSpace(input)
+		baketime_int,_ :=strconv.ParseUint(input,10,8)
+		recipe.Baketime = uint8(baketime_int)
+	}else if input == "6"{
+		fmt.Println("Enter the rating: ")
+		input, _ := reader.ReadString('\n')
+		input = strings.TrimSpace(input)
+		rate_int,_ :=strconv.ParseUint(input,10,8)
+		recipe.Rating = uint8(rate_int)
+	}else {
 		fmt.Println("Did not recoginze command")
 		return
 	}

@@ -111,7 +111,7 @@ func updateRecipe(c *gin.Context) {
 }
 
 // Delete recipe by name
-func deleteRecipeByName(c *gin.Context) {
+func deleteRecipeByQuery(c *gin.Context) {
 	title, title_ok := c.GetQuery("title")
 	id, id_ok := c.GetQuery("id")
 	if title_ok {
@@ -119,7 +119,7 @@ func deleteRecipeByName(c *gin.Context) {
 		if err == nil {
 			dbRecipes.delete(recipe)
 			c.JSON(http.StatusOK, gin.H{
-				"message": "Recipie deleted.",
+				"message": "Recipe deleted.",
 			})
 			return
 		}
@@ -141,27 +141,6 @@ func deleteRecipeByName(c *gin.Context) {
 
 }
 
-// delete recipe by id number
-func deleteById(c *gin.Context) {
-	id, ok := c.GetQuery("id")
-
-	id_uint, _ := strconv.ParseUint(id, 10, 64)
-
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "URL missing query"})
-		return
-	}
-
-	recipe, err := dbRecipes.query_id(id_uint)
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Recipe not found"})
-		return
-	}
-
-	dbRecipes.delete(recipe)
-
-}
 
 // function to start the server and initialize endpoints
 func StartServer(debug_mode bool) {
@@ -174,7 +153,7 @@ func StartServer(debug_mode bool) {
 	r.POST("/recipe", createRecipe)
 	r.GET("/recipe", getRecipeQuery)
 	r.PUT("/recipe", updateRecipe)
-	r.DELETE("/recipe", deleteRecipeByName)
+	r.DELETE("/recipe", deleteRecipeByQuery)
 
 	server_running = true
 	r.Run("localhost:3000") // listen and serve on port 3000

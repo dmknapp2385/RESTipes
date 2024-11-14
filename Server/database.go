@@ -39,7 +39,7 @@ func (db *RecipeDatabase) insert(r *Recipe) {
 
 func (db *RecipeDatabase) delete(r *Recipe) {
 	db.Lock()
-	delete(db._Recipes, db._CurrentID)
+	delete(db._Recipes, uint64(r.ID))
 	delete(db._Column_Title, r.Title)
 	db._Size--
 	db.Unlock()
