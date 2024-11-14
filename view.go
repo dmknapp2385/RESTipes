@@ -17,32 +17,33 @@ const GET_RECIPE_BY_TITLE = "2"
 const POST_NEW_RECIPE = "3"
 const UPDATE_RECIPE = "4"
 const DELETE_ALL_RECIPES = "5"
+const DELETE_BY_NAME="6"
 
 var reader = bufio.NewReader(os.Stdin)
 var controller = RecipeController{BaseURL: "http://localhost:3000"}
 
 func view_prompt(wait_group *sync.WaitGroup, file *string) {
 
-	if *file !=""{
+	if *file != "" {
 		data, err := os.ReadFile(*file)
-		if err != nil{
+		if err != nil {
 			fmt.Println("File not found!")
 		}
-		
+
 		var recipes []s.Recipe
 		err = json.Unmarshal(data, &recipes)
-		if err != nil{
+		if err != nil {
 			panic(err)
 		}
-		for _,recipe:=range recipes {
+		for _, recipe := range recipes {
 			controller.createRecipe(recipe)
 			fmt.Println(recipe)
 		}
 	}
-    
+
 	var run_prompt bool = true
 	for {
-		fmt.Println("What would you like to do:\n1. Get all recipes\n2. Get Recipe by name\n3. Add Recipe\n4. Update recipe\n5. Delete all recipes? Press any other key to exit.")
+		fmt.Println("What would you like to do:\n1. Get all recipes\n2. Get Recipe by name\n3. Add Recipe\n4. Update recipe\n5. Delete all recipes? Press any other key to exit.\n6. Delete recipe by name.")
 		fmt.Print(">>> ")
 		input, _ := reader.ReadString('\n')
 
@@ -66,6 +67,14 @@ func view_prompt(wait_group *sync.WaitGroup, file *string) {
 			updateRecipe()
 		case DELETE_ALL_RECIPES:
 			controller.DeleteAllRecipes()
+		case DELETE_BY_NAME:
+
+			fmt.Println("\nWhich recipe would you like to delete?")
+			fmt.Print(">>> ")
+			input, _ := reader.ReadString('\n')
+
+			title := strings.TrimSpace(input)
+			controller.DeleteRecipeByName(title)
 
 		default:
 			run_prompt = false
@@ -119,37 +128,47 @@ func getRecipe() *s.Recipe {
 
 func addRecipe() {
 	recipe := s.Recipe{}
-	fmt.Println("Title: ")
+	fmt.Print("Title: ")
 	title, _ := reader.ReadString('\n')
 	title = strings.TrimSpace(title)
 	recipe.Title = title
-	fmt.Println("Author: ")
+	fmt.Print("Author: ")
 	author, _ := reader.ReadString('\n')
 	author = strings.TrimSpace(author)
 	recipe.Author = author
-	fmt.Println("Ingredients (endter a line separated list): ")
-	ingredients, _ := reader.ReadString('\n')
-	ingredients = strings.TrimSpace(ingredients)
-	ingredList := strings.Split(ingredients, ",")
-	recipe.Ingredients = ingredList
-	fmt.Println("Steps (endter a line separated list): ")
-	steps, _ := reader.ReadString('\n')
-	steps = strings.TrimSpace(steps)
-	stepList := strings.Split(steps, ",")
-	recipe.Steps = stepList
-	fmt.Println("Bake time: ")
-	baketime, _ := reader.ReadString('\n')
-	baketime = strings.TrimSpace(baketime)
-	baketime_int,_ :=strconv.ParseUint(baketime,10,8)
-	recipe.Baketime = uint8(baketime_int)
-	fmt.Println("Rating: ")
-	rating, _ := reader.ReadString('\n')
-	rating = strings.TrimSpace(rating)
-	rate_int,_ :=strconv.ParseUint(baketime,10,8)
-	recipe.Baketime = uint8(rate_int)
-
+	fmt.Println("Ingredients: Type the ingredient then press enter.")
+	fmt.Println("When finished, press enter key only.")
+	var ingredients []string
+	var counter uint8 = 1
+	for {
+		fmt.Printf("Ingredient %v: ", counter)
+		counter++
+		ingredient, _ := reader.ReadString('\n')
+		ingredient = strings.TrimSpace(ingredient)
+		ingredient = strings.ToLower(ingredient)
+		if ingredient == "" {
+			break
+		}
+		ingredients = append(ingredients, ingredient)
+	}
+	recipe.Ingredients = ingredients
+	var steps []string
+	counter = 1
+	fmt.Println("Steps: Type the steps then press enter.")
+	fmt.Println("When finished, press enter key only.")
+	for {
+		fmt.Printf("Step %v: ", counter)
+		counter++
+		step, _ := reader.ReadString('\n')
+		step = strings.TrimSpace(step)
+		step = strings.ToLower(step)
+		if step == "" {
+			break
+		}
+		steps = append(steps, step)
+	}
+	recipe.Steps = steps
 	controller.createRecipe(recipe)
-
 }
 
 func updateRecipe() {
@@ -183,19 +202,19 @@ func updateRecipe() {
 		input = strings.TrimSpace(input)
 		steps := strings.Split(input, ",")
 		recipe.Ingredients = steps
-	} else if input == "5"{
+	} else if input == "5" {
 		fmt.Println("Enter the bake time: ")
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
-		baketime_int,_ :=strconv.ParseUint(input,10,8)
+		baketime_int, _ := strconv.ParseUint(input, 10, 8)
 		recipe.Baketime = uint8(baketime_int)
-	}else if input == "6"{
+	} else if input == "6" {
 		fmt.Println("Enter the rating: ")
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
-		rate_int,_ :=strconv.ParseUint(input,10,8)
+		rate_int, _ := strconv.ParseUint(input, 10, 8)
 		recipe.Rating = uint8(rate_int)
-	}else {
+	} else {
 		fmt.Println("Did not recoginze command")
 		return
 	}
