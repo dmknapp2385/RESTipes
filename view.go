@@ -9,7 +9,6 @@ import (
 	"strings"
 	"sync"
 
-	// "github.com/gin-gonic/gin/internal/json"
 	s "winners.com/recipes/Server"
 )
 
@@ -40,6 +39,7 @@ func view_prompt(wait_group *sync.WaitGroup, file *string) {
 			fmt.Println(recipe)
 		}
 	}
+    
 	var run_prompt bool = true
 	for {
 		fmt.Println("What would you like to do:\n1. Get all recipes\n2. Get Recipe by name\n3. Add Recipe\n4. Update recipe\n5. Delete all recipes? Press any other key to exit.")
