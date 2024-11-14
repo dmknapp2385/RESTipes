@@ -36,7 +36,7 @@ Follow the steps below to navigate and use the Recipe Book application:
    "baketime" : 120,
    "rating": 5
    }
-7. Currently the application is set up using the preconditon that no duplicate recipe titles be submitted and it is case sensitive.
+7. Currently the application is set up so that if a recipe is created with a title that already exists, the new recipe will override the current recipe.
 
 ## Credits
 

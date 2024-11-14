@@ -35,7 +35,7 @@ func view_prompt(wait_group *sync.WaitGroup, file *string) {
 			panic(err)
 		}
 		for _,recipe:=range recipes {
-			//controller.addRecipe(recipe)
+			controller.createRecipe(recipe)
 			fmt.Println(recipe)
 		}
 	}
@@ -148,7 +148,7 @@ func addRecipe() {
 	rate_int,_ :=strconv.ParseUint(baketime,10,8)
 	recipe.Baketime = uint8(rate_int)
 
-	//controller.addRecipe(recipe)
+	controller.createRecipe(recipe)
 
 }
 
