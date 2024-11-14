@@ -203,7 +203,7 @@ func (rc *RecipeController) createRecipe(newRecipe s.Recipe) error {
 	}
 
 	// Create a POST request
-	req, err := http.NewRequest(http.MethodPost, rc.BaseURL+"/recipe?title="+name, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest(http.MethodPost, rc.BaseURL+"/recipe", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
