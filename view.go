@@ -17,6 +17,7 @@ const GET_RECIPE_BY_TITLE = "2"
 const POST_NEW_RECIPE = "3"
 const UPDATE_RECIPE = "4"
 const DELETE_ALL_RECIPES = "5"
+const DELETE_BY_NAME="6"
 
 var reader = bufio.NewReader(os.Stdin)
 var controller = RecipeController{BaseURL: "http://localhost:3000"}
@@ -42,7 +43,7 @@ func view_prompt(wait_group *sync.WaitGroup, file *string) {
 
 	var run_prompt bool = true
 	for {
-		fmt.Println("What would you like to do:\n1. Get all recipes\n2. Get Recipe by name\n3. Add Recipe\n4. Update recipe\n5. Delete all recipes? Press any other key to exit.")
+		fmt.Println("What would you like to do:\n1. Get all recipes\n2. Get Recipe by name\n3. Add Recipe\n4. Update recipe\n5. Delete all recipes? Press any other key to exit.\n6. Delete recipe by name.")
 		fmt.Print(">>> ")
 		input, _ := reader.ReadString('\n')
 
@@ -66,6 +67,14 @@ func view_prompt(wait_group *sync.WaitGroup, file *string) {
 			updateRecipe()
 		case DELETE_ALL_RECIPES:
 			controller.DeleteAllRecipes()
+		case DELETE_BY_NAME:
+
+			fmt.Println("\nWhich recipe would you like to delete?")
+			fmt.Print(">>> ")
+			input, _ := reader.ReadString('\n')
+
+			title := strings.TrimSpace(input)
+			controller.DeleteRecipeByName(title)
 
 		default:
 			run_prompt = false
