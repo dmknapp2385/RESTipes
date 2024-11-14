@@ -166,6 +166,6 @@ func (rc *RecipeController) DeleteAllRecipes() error {
 	return nil
 }
 
-func (rc *RecipeController) createRecipe() error {
+// func (rc *RecipeController) createRecipe() error {
 	
-}
+// }
