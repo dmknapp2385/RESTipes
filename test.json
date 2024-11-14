@@ -1,0 +1,18 @@
+[
+  {
+    "title": "Meat Loaf",
+    "author": "Susan Kimble",
+    "Ingredients": ["beef", "breadcrumbs", "spices"],
+    "steps": ["mix together", "add to loaf pan", "bake at 250"],
+    "baketime": 120,
+    "vegan": false
+  },
+  {
+    "title": "Chicken Noodle Soup",
+    "author": "Susan Kimble",
+    "Ingredients": ["chicken", "broth", "carrots"],
+    "steps": ["boil", "add ingredients", "simmer for 50 minutes"],
+    "baketime": 50,
+    "vegan": false
+  }
+]
