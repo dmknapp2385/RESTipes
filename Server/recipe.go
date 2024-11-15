@@ -15,7 +15,7 @@ type Recipe struct {
 	Baketime    uint8    `json:"baketime"`
 	Vegan       bool     `json:"vegan"`
 	Author      string   `json:"author"`
-	Rating      uint8    `json:"rating"`
+	Rating      int    `json:"rating"`
 }
 
 // variable to indicate to view that server is running
