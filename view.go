@@ -49,14 +49,18 @@ func view_prompt(wait_group *sync.WaitGroup, file *string) {
 
         //add all recipes in file to database
 		for _, recipe := range recipes {
+            recipe.Title = strings.ToTitle(recipe.Title)
 			controller.createRecipe(recipe)
 			fmt.Println(recipe)
 		}
 	}
-
+    
+    //variable to check for exit
 	var run_prompt bool = true
+
+    //while not exit, prompt user
 	for {
-		fmt.Println("What would you like to do:\n1. Get all recipes\n2. Get Recipe by name\n3. Add Recipe\n4. Update recipe\n5. Delete all recipes? Press any other key to exit.\n6. Delete recipe by name? Press any other key to exit.")
+		fmt.Println("What would you like to do:\n1. Get all recipes\n2. Get Recipe by name\n3. Add Recipe\n4. Update recipe\n5. Delete all recipes.\n6. Delete recipe by name? Press any other key to exit.")
 		fmt.Print(">>> ")
 		input, _ := reader.ReadString('\n')
 
@@ -78,10 +82,20 @@ func view_prompt(wait_group *sync.WaitGroup, file *string) {
 		case POST_NEW_RECIPE:
 			addRecipe()
 		case UPDATE_RECIPE:
-			updateRecipe()
+            get_recipes()
+
+			fmt.Println("\nWhich recipe would you like to get?")
+			fmt.Print(">>> ")
+
+            input, _ := reader.ReadString('\n')
+			title := strings.TrimSpace(input)
+            title = strings.ToTitle(title)
+
+			updateRecipe(title)
 		case DELETE_ALL_RECIPES:
 			controller.DeleteAllRecipes()
 		case DELETE_BY_NAME:
+            get_recipes()
 
 			fmt.Println("\nWhich recipe would you like to delete?")
 			fmt.Print(">>> ")
@@ -89,7 +103,11 @@ func view_prompt(wait_group *sync.WaitGroup, file *string) {
 			title := strings.TrimSpace(input)
             title = strings.ToTitle(title)
 
-			controller.DeleteRecipeByName(title)
+			if error:=controller.DeleteRecipeByName(title); error != nil{
+                fmt.Println("Could not delete recipe.\n")
+            }else{
+                fmt.Println("Recipe deleted.\n")
+            }
 
 		default:
 			run_prompt = false
@@ -124,25 +142,8 @@ func get_recipe(title string) {
 	if err != nil {
 		fmt.Println("Could not find recipe by that name")
 	} else {
-		fmt.Printf("'%s', by %s\n", recipe.Title, recipe.Author)
+		printRecipe(recipe)
 	}
-}
-
-//Return recipe after getting input title
-func getRecipe() *s.Recipe {
-	fmt.Println("Which recipe would you like to get?")
-
-	input, _ := reader.ReadString('\n')
-	input = strings.TrimSpace(input)
-	input = strings.ToTitle(input)
-
-	recipe, err := controller.GetRecipeByName(input)
-
-	if err != nil {
-		fmt.Println("Could not find recipe by that name")
-		return nil
-	}
-	return recipe
 }
 
 //add a recipe
@@ -158,10 +159,26 @@ func addRecipe() {
 	author, _ := reader.ReadString('\n')
 	author = strings.TrimSpace(author)
 	recipe.Author = author
-	fmt.Println("Ingredients: Type the ingredient then press enter.")
+	recipe.Ingredients = getIngredients()
+	recipe.Steps = getSteps()
+    fmt.Print("Bake time: ")
+	time, _ := reader.ReadString('\n')
+	time = strings.TrimSpace(time)
+    time_int,_ :=strconv.ParseUint(time, 10, 64)
+    recipe.Baketime = uint8(time_int)
+    fmt.Print("Rating: ")
+	rate, _ := reader.ReadString('\n')
+	rate = strings.TrimSpace(rate)
+    rate_int, _ := strconv.Atoi(rate)
+    recipe.Rating = rate_int 
+	controller.createRecipe(recipe)
+}
+
+//get list of ingredients
+func getIngredients() (ingredients []string){
+    fmt.Println("Ingredients: Type the ingredient then press enter.")
 	fmt.Println("When finished, press enter key only.")
-	var ingredients []string
-	var counter uint8 = 1
+    var counter uint8 = 1
 	for {
 		fmt.Printf("Ingredient %v: ", counter)
 		counter++
@@ -173,9 +190,12 @@ func addRecipe() {
 		}
 		ingredients = append(ingredients, ingredient)
 	}
-	recipe.Ingredients = ingredients
-	var steps []string
-	counter = 1
+    return ingredients
+}
+
+//get list of steps
+func getSteps() (steps []string){
+    counter := 1
 	fmt.Println("Steps: Type the steps then press enter.")
 	fmt.Println("When finished, press enter key only.")
 	for {
@@ -189,15 +209,14 @@ func addRecipe() {
 		}
 		steps = append(steps, step)
 	}
-	recipe.Steps = steps
-	controller.createRecipe(recipe)
+    return steps
 }
 
 //updates recipe
-func updateRecipe() {
-	recipe := getRecipe()
+func updateRecipe(title string) {
+    recipe, _ := controller.GetRecipeByName(title)
 	if recipe == nil {
-		return
+		fmt.Println("Could not find recipe by that name")
 	}
 	name := recipe.Title
 	fmt.Println("What would you like to update\n1.Title\n2.Author\n3.Ingredients\n4.Steps\n5.Baketime\n6.Rating?")
@@ -215,29 +234,23 @@ func updateRecipe() {
 		input = strings.TrimSpace(input)
 		recipe.Author = input
 	} else if input == "3" {
-		fmt.Println("Enter comma separated list of ingredients: ")
-		input, _ := reader.ReadString('\n')
-		input = strings.TrimSpace(input)
-		ingredients := strings.Split(input, ",")
+        ingredients := getIngredients()
 		recipe.Ingredients = ingredients
 	} else if input == "4" {
-		fmt.Println("Enter comma separated list of steps: ")
-		input, _ := reader.ReadString('\n')
-		input = strings.TrimSpace(input)
-		steps := strings.Split(input, ",")
-		recipe.Ingredients = steps
+		steps := getSteps()
+		recipe.Steps = steps
 	} else if input == "5" {
 		fmt.Println("Enter the bake time: ")
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
-		baketime_int, _ := strconv.ParseUint(input, 10, 8)
+		baketime_int, _ := strconv.ParseUint(input, 10, 64)
 		recipe.Baketime = uint8(baketime_int)
 	} else if input == "6" {
 		fmt.Println("Enter the rating: ")
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
-		rate_int, _ := strconv.ParseUint(input, 10, 8)
-		recipe.Rating = uint8(rate_int)
+		rate_int, _ := strconv.Atoi(input)
+		recipe.Rating = rate_int
 	} else {
 		fmt.Println("Did not recoginze command")
 		return
@@ -257,7 +270,8 @@ func printRecipe(r *s.Recipe) {
 	for i, step := range r.Steps {
 		outputStr += "\t" + strconv.Itoa(i+1) + ": " + step + " \n"
 	}
-	outputStr += "Rating: " + string(r.Rating)
+    outputStr += "Bake time: " + strconv.Itoa(int(r.Baketime)) + "\n"
+	outputStr += "Rating: " + strconv.Itoa(r.Rating) +"\n"
 	fmt.Println(outputStr)
 }
 
@@ -265,6 +279,7 @@ func printRecipe(r *s.Recipe) {
 func output(recipies []s.Recipe) {
 	for _, recipe := range recipies {
 		fmt.Println(recipe.Title)
+        fmt.Println("\n")
 	}
 
 }
