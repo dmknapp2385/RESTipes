@@ -12,6 +12,15 @@ import (
 	s "winners.com/recipes/Server"
 )
 
+//view.go file prompts and accepts input from the user to pass onto the controller
+//Prompts include get all recipes, add recipe, get recipe by name, delete all recipes,
+// get a recipe by name, and updating a current recipe.
+//The view on load will upload a json file of recipes if a file name was passed
+//as a flag in the command line with the exectuion of the executable file.
+//command would be ./recipes -file=filename.json
+//program quits with input that is not one of the options for input
+
+//switch case constants
 const GET_ALL_RECIPES = "1"
 const GET_RECIPE_BY_TITLE = "2"
 const POST_NEW_RECIPE = "3"
@@ -19,11 +28,12 @@ const UPDATE_RECIPE = "4"
 const DELETE_ALL_RECIPES = "5"
 const DELETE_BY_NAME="6"
 
+
 var reader = bufio.NewReader(os.Stdin)
 var controller = RecipeController{BaseURL: "http://localhost:3000"}
 
 func view_prompt(wait_group *sync.WaitGroup, file *string) {
-
+    //if file is not an empty string, read in the file
 	if *file != "" {
 		data, err := os.ReadFile(*file)
 		if err != nil {
@@ -32,9 +42,12 @@ func view_prompt(wait_group *sync.WaitGroup, file *string) {
 
 		var recipes []s.Recipe
 		err = json.Unmarshal(data, &recipes)
+        
 		if err != nil {
-			panic(err)
+			fmt.Println("File must be json")
 		}
+
+        //add all recipes in file to database
 		for _, recipe := range recipes {
 			controller.createRecipe(recipe)
 			fmt.Println(recipe)
@@ -43,7 +56,7 @@ func view_prompt(wait_group *sync.WaitGroup, file *string) {
 
 	var run_prompt bool = true
 	for {
-		fmt.Println("What would you like to do:\n1. Get all recipes\n2. Get Recipe by name\n3. Add Recipe\n4. Update recipe\n5. Delete all recipes? Press any other key to exit.\n6. Delete recipe by name.")
+		fmt.Println("What would you like to do:\n1. Get all recipes\n2. Get Recipe by name\n3. Add Recipe\n4. Update recipe\n5. Delete all recipes? Press any other key to exit.\n6. Delete recipe by name? Press any other key to exit.")
 		fmt.Print(">>> ")
 		input, _ := reader.ReadString('\n')
 
@@ -57,8 +70,9 @@ func view_prompt(wait_group *sync.WaitGroup, file *string) {
 			fmt.Println("\nWhich recipe would you like to get?")
 			fmt.Print(">>> ")
 			input, _ := reader.ReadString('\n')
-
 			title := strings.TrimSpace(input)
+            title = strings.ToTitle(title)
+
 			get_recipe(title)
 
 		case POST_NEW_RECIPE:
@@ -72,8 +86,9 @@ func view_prompt(wait_group *sync.WaitGroup, file *string) {
 			fmt.Println("\nWhich recipe would you like to delete?")
 			fmt.Print(">>> ")
 			input, _ := reader.ReadString('\n')
-
 			title := strings.TrimSpace(input)
+            title = strings.ToTitle(title)
+
 			controller.DeleteRecipeByName(title)
 
 		default:
@@ -90,6 +105,7 @@ func view_prompt(wait_group *sync.WaitGroup, file *string) {
 	wait_group.Done()
 }
 
+//get all recipes
 func get_recipes() {
 	recipes, err := controller.GetRecipes()
 	if err != nil {
@@ -102,6 +118,7 @@ func get_recipes() {
 	}
 }
 
+//get recipe and print from controller
 func get_recipe(title string) {
 	recipe, err := controller.GetRecipeByName(title)
 	if err != nil {
@@ -111,11 +128,13 @@ func get_recipe(title string) {
 	}
 }
 
+//Return recipe after getting input title
 func getRecipe() *s.Recipe {
 	fmt.Println("Which recipe would you like to get?")
 
 	input, _ := reader.ReadString('\n')
 	input = strings.TrimSpace(input)
+	input = strings.ToTitle(input)
 
 	recipe, err := controller.GetRecipeByName(input)
 
@@ -126,11 +145,14 @@ func getRecipe() *s.Recipe {
 	return recipe
 }
 
+//add a recipe
 func addRecipe() {
 	recipe := s.Recipe{}
 	fmt.Print("Title: ")
+	//read input and convert to uppercase
 	title, _ := reader.ReadString('\n')
 	title = strings.TrimSpace(title)
+	title = strings.ToTitle(title)
 	recipe.Title = title
 	fmt.Print("Author: ")
 	author, _ := reader.ReadString('\n')
@@ -171,6 +193,7 @@ func addRecipe() {
 	controller.createRecipe(recipe)
 }
 
+//updates recipe
 func updateRecipe() {
 	recipe := getRecipe()
 	if recipe == nil {
@@ -184,6 +207,7 @@ func updateRecipe() {
 		fmt.Println("New Title: ")
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
+        input = strings.ToTitle(input)
 		recipe.Title = input
 	} else if input == "2" {
 		fmt.Println("New Author: ")
