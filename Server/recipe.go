@@ -1,5 +1,8 @@
 package server
 
+// recipe.go
+// Model/Backend Controller for database.go
+
 import (
 	"net/http"
 	"strconv"
@@ -7,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// recipe structure implementation
 type Recipe struct {
 	ID          uint32   `json:"id"`
 	Title       string   `json:"title"`
@@ -15,11 +19,10 @@ type Recipe struct {
 	Baketime    uint8    `json:"baketime"`
 	Vegan       bool     `json:"vegan"`
 	Author      string   `json:"author"`
-	Rating      int    `json:"rating"`
+	Rating      int      `json:"rating"`
 }
 
-// variable to indicate to view that server is running
-var server_running bool = false
+var server_running bool = false // flag indicating server has started
 
 // Function to return all recipes
 func getRecipes(c *gin.Context) {
@@ -86,18 +89,15 @@ func getRecipeQuery(c *gin.Context) {
 // Update recipe
 func updateRecipe(c *gin.Context) {
 	title, ok := c.GetQuery("title")
-
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "URL missing query"})
 		return
 	}
 
 	var updated Recipe
-
 	if err := c.BindJSON(&updated); err != nil {
 		return
 	}
-
 	oldPtr, err := dbRecipes.query_title(title)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Recipe not found"})
@@ -141,8 +141,7 @@ func deleteRecipeByQuery(c *gin.Context) {
 
 }
 
-
-// function to start the server and initialize endpoints
+// function to start the server and initialize routes
 func StartServer(debug_mode bool) {
 	if !debug_mode {
 		gin.SetMode(gin.ReleaseMode)
@@ -156,10 +155,11 @@ func StartServer(debug_mode bool) {
 	r.DELETE("/recipe", deleteRecipeByQuery)
 
 	server_running = true
-	r.Run("localhost:3000") // listen and serve on port 3000
+	r.Run("localhost:3000") // starts endpoint
+	// NOTE: nothing below r.Run will execute
 }
 
-// lets client know if server is running
+// lets view.go know if server is running
 func ServerReady() bool {
 	return server_running
 }
